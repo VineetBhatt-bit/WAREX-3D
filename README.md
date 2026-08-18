@@ -1,6 +1,18 @@
 # 🚀 WAREX Enterprise
 
 <p align="center">
+  <img src="frontend/src/assets/branding/logo.png" width="180"/>
+</p>
+
+<h1 align="center">WAREX Enterprise</h1>
+
+<p align="center">
+Building the Future of Smart Warehouses
+</p>
+
+<p align="center">
+A 3D Warehouse Digital Twin powered by C++, OOP, Data Structures and Three.js.
+</p>
 
 **Building the Future of Smart Warehouses**
 
