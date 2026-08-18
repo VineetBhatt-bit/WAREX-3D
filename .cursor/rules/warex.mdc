@@ -1,0 +1,115 @@
+# WAREX Enterprise Cursor Rules
+
+## Project Identity
+
+Project Name: WAREX Enterprise
+Repository: WAREX-3D
+
+Mission:
+Build a production-quality 3D Warehouse Management System that satisfies
+C++ OOP and Data Structures coursework while looking like a startup product.
+
+## Tech Stack
+
+Frontend:
+- HTML
+- CSS
+- JavaScript
+- Three.js
+- GSAP
+
+Backend:
+- C++17
+- Crow Framework
+- CMake
+
+Storage:
+- JSON files
+
+## Folder Responsibilities
+
+/frontend
+UI only.
+
+/backend
+Business logic only.
+
+/threejs
+3D scene only.
+
+/docs
+Documentation only.
+
+Never mix responsibilities.
+
+## OOP Rules
+
+Always use:
+- Encapsulation
+- Inheritance where appropriate
+- Polymorphism where useful
+- Modular classes
+
+Core classes include:
+- Product
+- Inventory
+- Order
+- Supplier
+- User
+- Warehouse
+
+## Data Structure Rules
+
+Implement manually.
+
+Required:
+- Linked List
+- Stack
+- Queue
+- Priority Queue
+- Binary Search Tree
+- Hash Table
+
+Do not replace these with STL equivalents unless explicitly requested for comparison.
+
+## Code Quality
+
+- Meaningful variable names
+- Small reusable functions
+- Clear comments
+- Consistent formatting
+- No unnecessary duplicate code
+
+## Git Rules
+
+Use Conventional Commits.
+
+Examples:
+
+feat:
+fix:
+docs:
+refactor:
+test:
+chore:
+
+Every major feature should feel like a real software company commit.
+
+## UI Style
+
+Theme:
+- Dark
+- Cyber Blue
+- Glassmorphism
+- Smooth animations
+- Professional enterprise dashboard
+
+Avoid cartoonish styling.
+
+## Output Style
+
+Whenever generating code:
+- produce complete working files
+- explain where each file belongs
+- preserve project architecture
+- avoid placeholder implementations when real ones can be written
