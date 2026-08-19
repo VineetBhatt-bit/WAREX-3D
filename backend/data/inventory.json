@@ -1,0 +1,50 @@
+[
+    {
+      "id": "A-01",
+      "category": "Hardware",
+      "capacity": 78,
+      "level": 2,
+      "products": [
+        {
+          "sku": "SCR-0001",
+          "name": "Philips Screw 10mm",
+          "quantity": 5400,
+          "price": 5
+        },
+        {
+          "sku": "BLT-0001",
+          "name": "Steel Bolt M8",
+          "quantity": 2300,
+          "price": 12
+        }
+      ]
+    },
+    {
+      "id": "A-02",
+      "category": "Tools",
+      "capacity": 45,
+      "level": 1,
+      "products": [
+        {
+          "sku": "HAM-0001",
+          "name": "Claw Hammer",
+          "quantity": 85,
+          "price": 450
+        }
+      ]
+    },
+    {
+      "id": "A-03",
+      "category": "Electrical",
+      "capacity": 62,
+      "level": 3,
+      "products": [
+        {
+          "sku": "LED-0001",
+          "name": "LED Bulb 12W",
+          "quantity": 900,
+          "price": 150
+        }
+      ]
+    }
+  ]
