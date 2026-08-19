@@ -1,20 +1,15 @@
 import "./style.css";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { createRack } from "./racks.js";
 
 // ============================================================
-// WAREX-3D — MAIN SCENE
+// WAREX 3D DIGITAL TWIN
 // ============================================================
 
 const scene = new THREE.Scene();
 
 scene.background = new THREE.Color(0x071525);
-
-scene.fog = new THREE.Fog(
-    0x071525,
-    45,
-    100
-);
 
 // ============================================================
 // CAMERA
@@ -29,7 +24,7 @@ const camera = new THREE.PerspectiveCamera(
 
 camera.position.set(
     18,
-    14,
+    13,
     24
 );
 
@@ -62,11 +57,10 @@ document.body.appendChild(
 // CONTROLS
 // ============================================================
 
-const controls =
-    new OrbitControls(
-        camera,
-        renderer.domElement
-    );
+const controls = new OrbitControls(
+    camera,
+    renderer.domElement
+);
 
 controls.enableDamping = true;
 controls.dampingFactor = 0.06;
@@ -87,18 +81,18 @@ controls.target.set(
 // LIGHTING
 // ============================================================
 
-const ambient =
+const ambientLight =
     new THREE.AmbientLight(
         0xffffff,
         1.5
     );
 
-scene.add(ambient);
+scene.add(ambientLight);
 
 const mainLight =
     new THREE.DirectionalLight(
         0xffffff,
-        2.0
+        2
     );
 
 mainLight.position.set(
@@ -118,7 +112,7 @@ mainLight.shadow.mapSize.height =
 scene.add(mainLight);
 
 // ============================================================
-// WAREHOUSE CEILING LIGHTS
+// INDUSTRIAL LED LIGHTS
 // ============================================================
 
 function createCeilingLight(x, z) {
@@ -126,7 +120,7 @@ function createCeilingLight(x, z) {
     const light =
         new THREE.PointLight(
             0xffffff,
-            5,
+            4,
             25
         );
 
@@ -143,9 +137,9 @@ function createCeilingLight(x, z) {
     const fixture =
         new THREE.Mesh(
             new THREE.BoxGeometry(
-                2.4,
+                2.5,
                 0.08,
-                0.28
+                0.3
             ),
             new THREE.MeshBasicMaterial({
                 color: 0xffffff
@@ -196,8 +190,8 @@ const floor =
         ),
         new THREE.MeshStandardMaterial({
             color: 0x505860,
-            roughness: 0.85,
-            metalness: 0.1
+            roughness: 0.9,
+            metalness: 0.05
         })
     );
 
@@ -224,12 +218,12 @@ grid.position.y = 0.03;
 scene.add(grid);
 
 // ============================================================
-// WAREHOUSE WALLS
+// WALLS
 // ============================================================
 
 const wallMaterial =
     new THREE.MeshStandardMaterial({
-        color: 0x737b84,
+        color: 0x858c94,
         roughness: 0.9
     });
 
@@ -258,12 +252,13 @@ function createWall(
         z
     );
 
-    wall.receiveShadow = true;
-
     wall.castShadow = true;
+    wall.receiveShadow = true;
 
     scene.add(wall);
 }
+
+// Back wall
 
 createWall(
     40,
@@ -274,6 +269,19 @@ createWall(
     -20
 );
 
+// Front wall
+
+createWall(
+    40,
+    10,
+    0.5,
+    0,
+    5,
+    20
+);
+
+// Left wall
+
 createWall(
     0.5,
     10,
@@ -282,6 +290,8 @@ createWall(
     5,
     0
 );
+
+// Right wall
 
 createWall(
     0.5,
@@ -314,15 +324,36 @@ ceiling.position.y = 10;
 scene.add(ceiling);
 
 // ============================================================
-// SAFETY AISLE
+// LOADING DOCK
 // ============================================================
 
-const aisleMaterial =
-    new THREE.MeshStandardMaterial({
-        color: 0xffd000,
-        emissive: 0x4d3d00,
-        roughness: 0.5
-    });
+const dock =
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            10,
+            0.7,
+            5
+        ),
+        new THREE.MeshStandardMaterial({
+            color: 0x70767c,
+            roughness: 0.85
+        })
+    );
+
+dock.position.set(
+    0,
+    0.35,
+    -17
+);
+
+dock.castShadow = true;
+dock.receiveShadow = true;
+
+scene.add(dock);
+
+// ============================================================
+// YELLOW SAFETY AISLE
+// ============================================================
 
 const aisle =
     new THREE.Mesh(
@@ -331,7 +362,10 @@ const aisle =
             0.04,
             30
         ),
-        aisleMaterial
+        new THREE.MeshStandardMaterial({
+            color: 0xffd000,
+            emissive: 0x4d3d00
+        })
     );
 
 aisle.position.set(
@@ -348,404 +382,17 @@ scene.add(aisle);
 
 const racks = [];
 
-// ------------------------------------------------------------
-// Materials
-// ------------------------------------------------------------
-
-const rackBlue =
-    new THREE.MeshStandardMaterial({
-        color: 0x0752a5,
-        metalness: 0.6,
-        roughness: 0.35
-    });
-
-const rackOrange =
-    new THREE.MeshStandardMaterial({
-        color: 0xff8c00,
-        metalness: 0.5,
-        roughness: 0.35
-    });
-
-const shelfMaterial =
-    new THREE.MeshStandardMaterial({
-        color: 0x66717d,
-        metalness: 0.35,
-        roughness: 0.6
-    });
-
-const palletMaterial =
-    new THREE.MeshStandardMaterial({
-        color: 0xb77a3b,
-        roughness: 0.85
-    });
-
-const boxMaterial =
-    new THREE.MeshStandardMaterial({
-        color: 0xc29155,
-        roughness: 0.85
-    });
-
 // ============================================================
-// CREATE ONE REAL WAREHOUSE PALLET RACK
-// ============================================================
-
-function createRack(
-    x,
-    z,
-    id
-) {
-
-    const rack =
-        new THREE.Group();
-
-    rack.position.set(
-        x,
-        0,
-        z
-    );
-
-    rack.userData = {
-        id: id,
-        type: "warehouse-rack"
-    };
-
-    // --------------------------------------------------------
-    // Upright posts
-    // --------------------------------------------------------
-
-    const postGeometry =
-        new THREE.BoxGeometry(
-            0.18,
-            5.5,
-            0.18
-        );
-
-    const postPositions = [
-        [-1.15, -0.65],
-        [1.15, -0.65],
-        [-1.15, 0.65],
-        [1.15, 0.65]
-    ];
-
-    postPositions.forEach(
-        ([px, pz]) => {
-
-            const post =
-                new THREE.Mesh(
-                    postGeometry,
-                    rackBlue.clone()
-                );
-
-            post.position.set(
-                px,
-                2.75,
-                pz
-            );
-
-            post.castShadow = true;
-
-            post.receiveShadow = true;
-
-            post.userData.rackRoot =
-                rack;
-
-            rack.add(post);
-        }
-    );
-
-    // --------------------------------------------------------
-    // Cross bracing
-    // --------------------------------------------------------
-
-    const braceMaterial =
-        rackBlue.clone();
-
-    const braceGeometry =
-        new THREE.BoxGeometry(
-            0.10,
-            1.35,
-            0.10
-        );
-
-    const braceLevels = [
-        0.8,
-        2.0,
-        3.2,
-        4.4
-    ];
-
-    braceLevels.forEach(
-        (y) => {
-
-            const frontBrace =
-                new THREE.Mesh(
-                    braceGeometry,
-                    braceMaterial
-                );
-
-            frontBrace.position.set(
-                0,
-                y,
-                -0.65
-            );
-
-            frontBrace.rotation.z =
-                Math.PI / 2;
-
-            rack.add(
-                frontBrace
-            );
-        }
-    );
-
-    // --------------------------------------------------------
-    // Shelf levels
-    // --------------------------------------------------------
-
-    const shelfLevels = [
-        0.8,
-        2.0,
-        3.2,
-        4.4
-    ];
-
-    shelfLevels.forEach(
-        (y, levelIndex) => {
-
-            // Shelf platform
-
-            const shelf =
-                new THREE.Mesh(
-                    new THREE.BoxGeometry(
-                        2.3,
-                        0.12,
-                        1.25
-                    ),
-                    shelfMaterial.clone()
-                );
-
-            shelf.position.set(
-                0,
-                y,
-                0
-            );
-
-            shelf.castShadow = true;
-
-            shelf.receiveShadow = true;
-
-            shelf.userData.rackRoot =
-                rack;
-
-            rack.add(shelf);
-
-            // ------------------------------------------------
-            // Orange front beam
-            // ------------------------------------------------
-
-            const frontBeam =
-                new THREE.Mesh(
-                    new THREE.BoxGeometry(
-                        2.45,
-                        0.18,
-                        0.16
-                    ),
-                    rackOrange.clone()
-                );
-
-            frontBeam.position.set(
-                0,
-                y - 0.05,
-                -0.64
-            );
-
-            frontBeam.castShadow = true;
-
-            frontBeam.userData.rackRoot =
-                rack;
-
-            rack.add(frontBeam);
-
-            // ------------------------------------------------
-            // Orange rear beam
-            // ------------------------------------------------
-
-            const rearBeam =
-                new THREE.Mesh(
-                    new THREE.BoxGeometry(
-                        2.45,
-                        0.18,
-                        0.16
-                    ),
-                    rackOrange.clone()
-                );
-
-            rearBeam.position.set(
-                0,
-                y - 0.05,
-                0.64
-            );
-
-            rearBeam.castShadow = true;
-
-            rack.add(rearBeam);
-
-            // ------------------------------------------------
-            // Pallet
-            // ------------------------------------------------
-
-            const pallet =
-                new THREE.Mesh(
-                    new THREE.BoxGeometry(
-                        1.8,
-                        0.12,
-                        0.9
-                    ),
-                    palletMaterial.clone()
-                );
-
-            pallet.position.set(
-                0,
-                y + 0.12,
-                0
-            );
-
-            pallet.castShadow = true;
-
-            pallet.receiveShadow = true;
-
-            pallet.userData.rackRoot =
-                rack;
-
-            rack.add(pallet);
-
-            // ------------------------------------------------
-            // Product boxes
-            // ------------------------------------------------
-
-            const boxPositions = [
-                -0.65,
-                0,
-                0.65
-            ];
-
-            boxPositions.forEach(
-                (bx, boxIndex) => {
-
-                    const box =
-                        new THREE.Mesh(
-                            new THREE.BoxGeometry(
-                                0.52,
-                                0.42,
-                                0.52
-                            ),
-                            boxMaterial.clone()
-                        );
-
-                    box.position.set(
-                        bx,
-                        y + 0.42,
-                        0
-                    );
-
-                    box.castShadow = true;
-
-                    box.receiveShadow = true;
-
-                    box.userData = {
-                        rackRoot: rack,
-                        rackId: id,
-                        level: levelIndex + 1
-                    };
-
-                    rack.add(box);
-
-                }
-            );
-        }
-    );
-
-    // --------------------------------------------------------
-    // Rack label
-    // --------------------------------------------------------
-
-    const labelCanvas =
-        document.createElement(
-            "canvas"
-        );
-
-    labelCanvas.width = 256;
-    labelCanvas.height = 64;
-
-    const ctx =
-        labelCanvas.getContext(
-            "2d"
-        );
-
-    ctx.fillStyle =
-        "#071525";
-
-    ctx.fillRect(
-        0,
-        0,
-        256,
-        64
-    );
-
-    ctx.fillStyle =
-        "#ffffff";
-
-    ctx.font =
-        "bold 30px Arial";
-
-    ctx.textAlign =
-        "center";
-
-    ctx.fillText(
-        id,
-        128,
-        42
-    );
-
-    const texture =
-        new THREE.CanvasTexture(
-            labelCanvas
-        );
-
-    const label =
-        new THREE.Mesh(
-            new THREE.PlaneGeometry(
-                1.7,
-                0.42
-            ),
-            new THREE.MeshBasicMaterial({
-                map: texture,
-                transparent: true
-            })
-        );
-
-    label.position.set(
-        0,
-        5.65,
-        -0.7
-    );
-
-    rack.add(label);
-
-    scene.add(rack);
-
-    racks.push(rack);
-
-    return rack;
-}
-
-// ============================================================
-// LOAD RACK POSITIONS FROM BACKEND
+// LOAD WAREHOUSE FROM BACKEND
 // ============================================================
 
 async function loadWarehouse() {
 
     try {
+
+        console.log(
+            "WAREX: Loading warehouse..."
+        );
 
         const response =
             await fetch(
@@ -755,8 +402,7 @@ async function loadWarehouse() {
         if (!response.ok) {
 
             throw new Error(
-                "Warehouse API returned " +
-                response.status
+                `Warehouse API error: ${response.status}`
             );
         }
 
@@ -764,62 +410,74 @@ async function loadWarehouse() {
             await response.json();
 
         console.log(
-            "WAREX warehouse data:",
+            "WAREX layout:",
             data
         );
 
-        // Remove existing racks
+        if (
+            !data.shelves ||
+            !Array.isArray(data.shelves)
+        ) {
 
-        racks.forEach(
-            rack => scene.remove(rack)
-        );
+            throw new Error(
+                "Invalid warehouse layout"
+            );
+        }
 
-        racks.length = 0;
-
-        // Create every rack
+        // ----------------------------------------------------
+        // Create racks
+        // ----------------------------------------------------
 
         data.shelves.forEach(
             (shelf, index) => {
 
-                const id =
-                    "A-" +
-                    String(
+                const rackId =
+                    `A-${String(
                         index + 1
-                    ).padStart(
-                        2,
-                        "0"
+                    ).padStart(2, "0")}`;
+
+                const rackData = {
+                    id: rackId,
+                    category: "General",
+                    capacity: 0,
+                    level: 4,
+                    products: []
+                };
+
+                const rack =
+                    createRack(
+                        Number(shelf.x),
+                        Number(shelf.z),
+                        rackData
                     );
 
-                createRack(
-                    shelf.x,
-                    shelf.z,
-                    id
-                );
+                scene.add(rack);
+
+                racks.push(rack);
 
             }
         );
 
         console.log(
-            "WAREX racks created:",
-            racks.length
+            `WAREX: ${racks.length} racks created`
         );
 
     } catch (error) {
 
         console.error(
-            "WAREX rack loading error:",
+            "WAREX warehouse error:",
             error
         );
 
-        // ----------------------------------------------------
-        // Emergency fallback
-        // ----------------------------------------------------
+        // ====================================================
+        // FALLBACK RACK LAYOUT
+        // ====================================================
 
         console.log(
-            "Using local warehouse fallback."
+            "WAREX: Creating fallback racks..."
         );
 
-        const positions = [];
+        const fallbackPositions = [];
 
         for (
             let z = -12;
@@ -827,41 +485,63 @@ async function loadWarehouse() {
             z += 4
         ) {
 
-            positions.push({
+            fallbackPositions.push({
                 x: -5,
-                z: z
+                z
             });
 
-            positions.push({
+            fallbackPositions.push({
                 x: 5,
-                z: z
+                z
             });
+
         }
 
-        positions.forEach(
+        fallbackPositions.forEach(
             (position, index) => {
 
-                createRack(
-                    position.x,
-                    position.z,
-                    "A-" +
-                    String(
-                        index + 1
-                    ).padStart(
-                        2,
-                        "0"
-                    )
-                );
+                const rackData = {
+                    id:
+                        `A-${String(
+                            index + 1
+                        ).padStart(2, "0")}`,
+
+                    category:
+                        "General",
+
+                    capacity: 0,
+
+                    level: 4,
+
+                    products: []
+                };
+
+                const rack =
+                    createRack(
+                        position.x,
+                        position.z,
+                        rackData
+                    );
+
+                scene.add(rack);
+
+                racks.push(rack);
 
             }
+        );
+
+        console.log(
+            `WAREX fallback: ${racks.length} racks created`
         );
     }
 }
 
+// Start warehouse
+
 loadWarehouse();
 
 // ============================================================
-// RACK HOVER / CLICK
+// RACK INTERACTION
 // ============================================================
 
 const raycaster =
@@ -872,17 +552,37 @@ const mouse =
 
 let hoveredRack = null;
 
-// ------------------------------------------------------------
-// Change rack color
-// ------------------------------------------------------------
+// ============================================================
+// MOUSE POSITION
+// ============================================================
 
-function setRackColor(
-    rack,
-    color
-) {
+window.addEventListener(
+    "pointermove",
+    (event) => {
+
+        mouse.x =
+            (
+                event.clientX /
+                window.innerWidth
+            ) * 2 - 1;
+
+        mouse.y =
+            -(
+                event.clientY /
+                window.innerHeight
+            ) * 2 + 1;
+
+    }
+);
+
+// ============================================================
+// RACK COLOR
+// ============================================================
+
+function highlightRack(rack) {
 
     rack.traverse(
-        object => {
+        (object) => {
 
             if (
                 object.isMesh &&
@@ -896,10 +596,11 @@ function setRackColor(
 
                     object.userData.originalColor =
                         object.material.color.getHex();
+
                 }
 
                 object.material.color.set(
-                    color
+                    0xffd000
                 );
             }
 
@@ -907,16 +608,10 @@ function setRackColor(
     );
 }
 
-// ------------------------------------------------------------
-// Restore rack color
-// ------------------------------------------------------------
-
-function restoreRackColor(
-    rack
-) {
+function restoreRack(rack) {
 
     rack.traverse(
-        object => {
+        (object) => {
 
             if (
                 object.isMesh &&
@@ -936,29 +631,27 @@ function restoreRackColor(
 }
 
 // ============================================================
-// MOUSE MOVE
+// FIND RACK FROM INTERSECTION
 // ============================================================
 
-window.addEventListener(
-    "pointermove",
-    (event) => {
+function findRack(object) {
 
-        mouse.x =
-            (
-                event.clientX /
-                window.innerWidth
-            ) * 2 - 1;
+    let current = object;
 
-        mouse.y =
-            -(
-                event.clientY /
-                window.innerHeight
-            ) * 2 + 1;
+    while (
+        current &&
+        !racks.includes(current)
+    ) {
+
+        current =
+            current.parent;
     }
-);
+
+    return current || null;
+}
 
 // ============================================================
-// CLICK RACK
+// CLICK
 // ============================================================
 
 window.addEventListener(
@@ -970,57 +663,33 @@ window.addEventListener(
             camera
         );
 
-        const intersections =
+        const hits =
             raycaster.intersectObjects(
                 racks,
                 true
             );
 
         if (
-            intersections.length === 0
+            hits.length === 0
         ) {
 
             return;
         }
 
-        let selected =
-            intersections[0].object;
+        const rack =
+            findRack(
+                hits[0].object
+            );
 
-        while (
-            selected.parent &&
-            !racks.includes(selected)
-        ) {
+        if (!rack) {
 
-            selected =
-                selected.parent;
+            return;
         }
 
-        if (
-            racks.includes(selected)
-        ) {
-
-            // Highlight selected rack
-
-            racks.forEach(
-                rack => {
-
-                    restoreRackColor(
-                        rack
-                    );
-
-                }
-            );
-
-            setRackColor(
-                selected,
-                0xffd000
-            );
-
-            console.log(
-                "Selected WAREX Rack:",
-                selected.userData.id
-            );
-        }
+        console.log(
+            "WAREX Selected Rack:",
+            rack.userData
+        );
 
     }
 );
@@ -1035,70 +704,56 @@ function animate() {
         animate
     );
 
-    // Hover detection
-
     raycaster.setFromCamera(
         mouse,
         camera
     );
 
-    const intersections =
+    const hits =
         raycaster.intersectObjects(
             racks,
             true
         );
 
+    let currentRack = null;
+
     if (
-        intersections.length > 0
+        hits.length > 0
     ) {
 
-        let rack =
-            intersections[0].object;
-
-        while (
-            rack.parent &&
-            !racks.includes(rack)
-        ) {
-
-            rack =
-                rack.parent;
-        }
-
-        if (
-            racks.includes(rack) &&
-            rack !== hoveredRack
-        ) {
-
-            if (
-                hoveredRack
-            ) {
-
-                restoreRackColor(
-                    hoveredRack
-                );
-            }
-
-            hoveredRack =
-                rack;
-
-            setRackColor(
-                hoveredRack,
-                0xffd000
+        currentRack =
+            findRack(
+                hits[0].object
             );
-        }
+    }
 
-    } else {
+    // Rack changed
+
+    if (
+        currentRack !==
+        hoveredRack
+    ) {
 
         if (
             hoveredRack
         ) {
 
-            restoreRackColor(
+            restoreRack(
                 hoveredRack
             );
-
-            hoveredRack = null;
         }
+
+        if (
+            currentRack
+        ) {
+
+            highlightRack(
+                currentRack
+            );
+        }
+
+        hoveredRack =
+            currentRack;
     }
 
     controls.update();
